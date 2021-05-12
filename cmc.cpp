@@ -13,6 +13,7 @@
 
 int mem_pos_to = 0; 
 
+
 Rate_Catalog * mas_rate = new Rate_Catalog[LEN_OF_CHAIN];
 Possible_Events * events = new Possible_Events[NUM_OF_ADATOMS * 2 + 10];
 
@@ -124,15 +125,14 @@ void create_rate_catalog(bool * chain_bool, double t)
 
 void change_rate_catalog(bool * chain_bool, double t)
 {
-	int i = 0;
 	find_rang(chain_bool, mem_pos_to, t);
-	for (int i = 1; i < 5; i++) {
+	for (int i = 1; i < 10; i++) {
 		if (chain_bool[(LEN_OF_CHAIN + mem_pos_to - i) % LEN_OF_CHAIN]) {
 			find_rang(chain_bool, (LEN_OF_CHAIN + mem_pos_to - i) % LEN_OF_CHAIN, t);
 			break;
 		}
 	}
-	for (int i = 1; i < 5; i++) {
+	for (int i = 1; i < 10; i++) {
 		if (chain_bool[(mem_pos_to + i) % LEN_OF_CHAIN]) {
 			find_rang(chain_bool, (mem_pos_to + i) % LEN_OF_CHAIN, t);
 			break;
@@ -142,21 +142,21 @@ void change_rate_catalog(bool * chain_bool, double t)
 void choose_event(int * chain_int, bool* chain_bool, bool new_atoms)
 {
 	//
-	int k = 1;
-	int m = 0;
+	int k = 1; //индекс свободного места в масиве возможных событий events[]
+	int m = 0; //индекс атома в масиве chain_int[], ещё недобавленного в возможное событие 
 	while (chain_int[m] >= 0) {
 		int pos = (chain_int[m] - 1 + LEN_OF_CHAIN) % LEN_OF_CHAIN;
 		if (!chain_bool[pos]) { // если слева от атома есть место
-			events[k].from = chain_int[m];
+			events[k].index_from = m; //сохряняем номер ячейки массива chain_int[], который хранит позицию откуда прыгает атом
 			events[k].to = pos;
-			events[k].rate = mas_rate[(pos + 1) % LEN_OF_CHAIN].rate_left;
+			events[k].rate = mas_rate[chain_int[m]].rate_left;
 			k++;
 		}
 		pos = (pos + 2) % LEN_OF_CHAIN;
 		if (!chain_bool[pos]) { // если справа от атома есть место
-			events[k].from = chain_int[m];
+			events[k].index_from = m; //сохряняем номер ячейки массива chain_int[], который хранит позицию откуда прыгает атом
 			events[k].to = pos;
-			events[k].rate = mas_rate[(pos - 1 + LEN_OF_CHAIN) % LEN_OF_CHAIN].rate_right;
+			events[k].rate = mas_rate[chain_int[m]].rate_right;
 			k++;
 		}
 		m++;
@@ -201,19 +201,15 @@ void choose_event(int * chain_int, bool* chain_bool, bool new_atoms)
 		mem_pos_to = rand2;
 	}
 	else { //событие движения
-		int t = 0;
-		for (t; chain_int[t] != events[j].from && t < LEN_OF_CHAIN; t++) {}
-		if (t >= LEN_OF_CHAIN) {
-			std::cout << "Out of array chain_int" << endl;
-		}
-		chain_int[t] = events[j].to;
-		chain_bool[events[j].from] = false;
+		chain_bool[chain_int[events[j].index_from]] = false;
+        chain_int[events[j].index_from] = events[j].to;
 		chain_bool[events[j].to] = true;
-		mem_pos_to = events[j].to; /////не используется
+		mem_pos_to = events[j].to;
 	}
 	//Счет времени
 	int r2 = rand() + 1;
-	double l = log((RAND_MAX + 1) / double(r2));
+    double random_max_value = RAND_MAX;
+	double l = log((random_max_value + 1) / double(r2));
 	time1 = time1 + (1 / sum[i - 1]) * l;
 }
 

@@ -10,7 +10,7 @@ struct Rate_Catalog
 };
 struct Possible_Events 
 {
-	int from;
+	int index_from;
 	int to;
 	double rate;
 }; 

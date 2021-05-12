@@ -16,29 +16,33 @@ unsigned int avg_atoms;
 unsigned int avg_ot;
 unsigned int avg_nap;
 
+double avg1_time = 0;
+double avg2_time = 0;
+double avg1_temp = 0;
+double avg2_temp = 0;
+unsigned int search_time;
+/*
+string to_string(int n)
+{
+    char buf[40];
+    sprintf(buf,"%d",n);
+    return buf;
+}*/
+
 double time1; //время
 double T1; //температура
-char s[200]; //имя выводимого файла 
-
+string s = "exp="; //имя выводимого файла 
 
 bool init(int argc, char* argv[], ofstream& f2out) {
 	if (argc == 6) {
-		init_values.iterations_of_exp = atoi(argv[1]);
-		init_values.tay = atoi(argv[2]);
-		init_values.temperature1 = atoi(argv[3]);
-		init_values.temperature2 = atoi(argv[4]);
-		init_values.time_of_nap = atoi(argv[5]);
-		strcpy(s, "exp=");
-		strcat(s, argv[1]);
-		strcat(s, "_tay=");
-		strcat(s, argv[2]);
-		strcat(s, "_T1=");
-		strcat(s, argv[3]);
-		strcat(s, "_T2=");
-		strcat(s, argv[4]);
-		strcat(s, "_time=");
-		strcat(s, argv[5]);
-		strcat(s, ".txt");
+		init_values.iterations_of_exp =   atoi(argv[1]);
+		init_values.tay =                 atoi(argv[2]);
+		init_values.temperature1 =        atoi(argv[3]);
+		init_values.temperature2 =        atoi(argv[4]);
+		init_values.time_of_nap =         atoi(argv[5]);
+        
+        s = "exp=" + to_string(init_values.iterations_of_exp) + "_tay=" + to_string(init_values.tay) + "_T1=" + to_string(init_values.temperature1) + "_T2=" + to_string(init_values.temperature2) + "_time=" + to_string(init_values.time_of_nap);
+        
 		f2out.open(s, ios::out);
 		return false;
 	}
@@ -48,31 +52,30 @@ bool init(int argc, char* argv[], ofstream& f2out) {
 
 int main(int argc, char* argv[])
 {
-	ofstream f2out;
-	if (init(argc, argv, f2out)) {
+	
+    setlocale(LC_ALL, "Russian");
+    
+    ofstream f2out;
+	
+    if (init(argc, argv, f2out)) {
 		delete[] mas_rate;
 		delete[] events;
 		return 0;
 	}
-	setlocale(LC_ALL, "Russian");
 
 	unsigned int start_time = clock();
 
 	int * chain_int = new int[LEN_OF_CHAIN];
 	bool * chain_bool = new bool[LEN_OF_CHAIN];
 
-	for (int i = 0; i < LEN_OF_CHAIN; i++) {
-		chain_lenth_distribution[i] = 0;
-	}
-
-
 	avg_atoms = 0;
 	avg_ot = 0;
 	avg_nap = 0;
-	double avg1_time = 0;
-	double avg2_time = 0;
-	double avg1_temp = 0;
-	double avg2_temp = 0;
+    
+    for (int i = 0; i < LEN_OF_CHAIN; i++) {
+		chain_lenth_distribution[i] = 0;
+	}
+	
 
 	for (int index = 0; index < init_values.iterations_of_exp; index++) {
 		if (int(init_values.iterations_of_exp / 100) != 0) {
@@ -138,26 +141,11 @@ int main(int argc, char* argv[])
 
 	//Вывод результатов в файл
 	file_distribution_output(f2out); 
+    file_output_description(ofstream& f2out)
 
 	unsigned int end_time = clock(); // конечное время
-	unsigned int search_time = end_time - start_time; // искомое время
-	std::cout << "Время выполнения программы " << search_time << " мс";
-	f2out << "Время выполнения программы " << search_time << " мс" << endl;
-
-	f2out << -1 << endl;
-	f2out << "T1=" << init_values.temperature1 << "K ";
-	f2out << "T2=" << init_values.temperature2 << "K ";
-	f2out << "Exp=" << init_values.iterations_of_exp << endl;
-	f2out << "Адатомов: " << avg_atoms / (init_values.iterations_of_exp) << "/100";
-	f2out << " Тау=" << init_values.tay << " секунд" << endl;
-
-	f2out << "Ср. вр. нап: " << avg1_time / (init_values.iterations_of_exp) << "сек" << endl;
-	f2out << "Ср. ч-ло ит. нап: " << avg_nap / (init_values.iterations_of_exp) << endl;
-	f2out << "Ср. т-ра после нап: " << avg1_temp / (init_values.iterations_of_exp) << "K" << endl;
-
-	f2out << "Ср. вр. отжига: " << avg2_time / (init_values.iterations_of_exp) << "cек" << endl;
-	f2out << "Ср. ч-ло ит. отжига: " << avg_ot / (init_values.iterations_of_exp) << endl;
-	f2out << "Ср. т-ра после отжига: " << avg2_temp / (init_values.iterations_of_exp) << endl;
+	search_time = end_time - start_time; // искомое время
+    
 	
 	ofstream file_time;
 	file_time.open("run_time.txt", ios_base::app);
@@ -173,7 +161,6 @@ int main(int argc, char* argv[])
 	
 
 	f2out.close();
-	//std::system("python py_vis.py");
 	return 0;
 }
 

@@ -3,8 +3,8 @@
 
 using namespace std;
 
-#define LEN_OF_CHAIN 1164
-#define NUM_OF_ADATOMS 364
+#define LEN_OF_CHAIN 100
+#define NUM_OF_ADATOMS 10
 
 
 struct Init {
